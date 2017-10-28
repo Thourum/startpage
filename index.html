@@ -405,7 +405,7 @@
         if (el == 'Alt') { required[index] = 'Alt'; (alt? pressed[index] = 'Alt': null) } 
         else {
           required[index] = 'key'
-          if (e.key == el) { pressed[index] = 'key' }
+          if (e.code == ("Key"+el.toUpperCase())) { pressed[index] = 'key' }
         }
       })
       // This is a Hack I give up sorry its 3:04 AM
