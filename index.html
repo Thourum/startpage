@@ -55,6 +55,19 @@
       's': ['s/you/likes', 's/discover/the-upload'],
     },
 
+    // Themes
+    // KeyCombination to Trigger it. Use these modifiers and any key: Control, Shift, Alt
+    themeKey: ["Control", "Alt", "s"],
+
+    themes: {
+      Dark: {
+        font: 'Lato',
+        fontFamily: 'sans-serif',
+        color: '#fff',
+        background: '#000'
+      }
+    },
+
     // instantly redirect when a key is matched
     // put a space before any other queries to prevent unwanted redirects
     instantRedirect: false,
@@ -330,13 +343,11 @@
     }
 
     .category {
-      margin: 1rem;
+      margin: 2rem 0;
     }
 
     .categories {
-      display: flex;
-      flex-wrap: wrap;
-      flex-flow: row;
+      grid-template-columns: repeat(2, 300px) 185px;
     }
   }
 
@@ -379,10 +390,35 @@
       script.src = url;
       $.el('head').appendChild(script);
     },
+    isThemeKey: e => {
+      const ctrl = e.ctrlKey;
+      const shift = e.shiftKey;
+      const alt = e.altKey;
 
+      var required = []
+      var pressed = []
+      CONFIG.themeKey.forEach((el, index, arr) =>{
+        if (el == 'Control') { required[index] = 'Control'; (ctrl? pressed[index] = 'Control': null) } else
+        if (el == 'Shift') { required[index] = 'Shift'; (shift? pressed[index] = 'Shift': null) } else
+        if (el == 'Alt') { required[index] = 'Alt'; (alt? pressed[index] = 'Alt': null) } 
+        else {
+          required[index] = 'key'
+          if (e.key == el) { pressed[index] = 'key' }
+        }
+      })
+      // This is a Hack I give up sorry its 3:04 AM
+      if ((required[0] == pressed[0])&&(required[1] == pressed[1])&&(required[2] == pressed[2])&&(required[3] == pressed[3])) {
+        return true
+      } else {
+        return false
+      }
+    },
     key: e => {
       const ctrl = e.ctrlKey;
       const shift = e.shiftKey;
+      const alt = e.altKey;
+
+      if($.isThemeKey(e)){return 'ThemeKey'}
 
       switch (e.which) {
         case 8: return 'backspace';
@@ -401,6 +437,50 @@
       }
     },
   };
+
+  class Theme {
+    constructor(props) {
+      this._themes = props.themes
+      this._themes.Default = {
+        font: 'Lato',
+        fontFamily: 'sans-serif',
+        color: '#222',
+        background: '#fff'
+      }
+      this._command = props.command
+      this._currentTheme = this._themes.default
+      this._bindMethods()
+      this._registerEvents()
+    }
+    changeTheme(){
+      for (let prop in this._themes) {
+        if (this._currentTheme !== this._themes[prop]) {
+          this._applyTheme(this._themes[prop])
+          this._currentTheme = this._themes[prop]
+          break;
+        }
+      }
+    }
+    _bindMethods() {
+      this._handleKeydown = this._handleKeydown.bind(this);
+    }
+    _applyTheme(t){
+      let bs = document.body.style;
+      bs.font = t.font
+      bs.fontFamily = t.fontFamily
+      bs.color = t.color
+      bs.background = t.background
+    }
+
+    _handleKeydown(e){
+      if($.key(e) == "ThemeKey"){
+        this.changeTheme()
+      }
+    }
+    _registerEvents(){
+      document.addEventListener('keydown', this._handleKeydown);
+    }
+  }
 
   class Clock {
     constructor(options) {
@@ -494,7 +574,9 @@
     }
 
     _handleKeydown(e) {
-      if ($.key(e) === 'escape') this.toggle(false);
+      if(e.key == 'Escape'){
+        this.toggle(false);
+      }
     }
 
     _registerEvents() {
@@ -923,6 +1005,7 @@
         case 'ctrl':
         case 'enter':
         case 'shift':
+        case 'ThemeKey':
         case 'super': return;
         case 'escape': this.hide(); return;
       }
@@ -1039,7 +1122,10 @@
       suggester: CONFIG.suggestions ? getSuggester() : false,
     });
   };
-
+  new Theme({
+    themes: CONFIG.themes,
+    command: CONFIG.themeKey
+  })
   new Clock({
     delimiter: CONFIG.clockDelimiter,
     form: getForm(),
