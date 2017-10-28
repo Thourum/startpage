@@ -358,6 +358,36 @@
       grid-template-columns: repeat(5, 250px) 185px;
     }
   }
+
+.glitch {
+  position: relative;
+}
+
+#clock.glitch{
+  text-shadow: 8px -8px #D32B60, -8px 8px #44C9E8;
+}
+
+.glitch:after {
+  content: attr(data-text);
+  position: absolute;
+  left: 30px;
+  text-shadow: -1px 0 black, 1px 0 white, -4px 0 #d32b60, 4px 0 #d32b60;
+  top: 0;
+  color: black;
+  overflow: hidden;
+}
+
+.glitch:before {
+  content: attr(data-text);
+  position: absolute;
+  left: -16px;
+  text-shadow: -1px 0 white, 1px 0 white, -4px 0 #44c9e8, 4px 0 #44c9e8;
+  top: 0;
+  color: white;
+  background: black;
+  overflow: hidden;
+}
+
 </style>
 
 <div class="center">
@@ -374,6 +404,12 @@
 <aside class="overlay center" id="help"></aside>
 
 <script>
+  let rAF = ((callback, duration) => {
+        return  window.requestAnimationFrame || 
+        window.webkitRequestAnimationFrame || 
+        window.mozRequestAnimationFrame || 
+        window.setTimeout(callback, 1000 / duration);
+    })()
   const $ = {
     bodyClassAdd: c => $.el('body').classList.add(c),
     bodyClassHas: c => $.el('body').classList.contains(c),
@@ -386,7 +422,17 @@
     isDown: e => ['c-n', 'down', 'tab'].includes($.key(e)),
     isRemove: e => ['backspace', 'delete'].includes($.key(e)),
     isUp: e => ['c-p', 'up', 's-tab'].includes($.key(e)),
-
+    getRuleWithSelector: selector => {
+      let numSheets = document.styleSheets.length, docStyle = document.styleSheets, sheetIndex, numRules, ruleIndex;
+      for (sheetIndex = 0; sheetIndex < numSheets; sheetIndex += 1) {
+        numRules = docStyle[sheetIndex].cssRules.length;
+        for (ruleIndex = 0; ruleIndex < numRules; ruleIndex += 1) {
+          if (docStyle[sheetIndex].cssRules[ruleIndex].selectorText === selector ) {
+            return docStyle[sheetIndex].cssRules[ruleIndex];
+          }
+        }
+      }
+    },
     jsonp: url => {
       let script = document.createElement('script');
       script.src = url;
@@ -438,6 +484,8 @@
         case 91: return 'super';
       }
     },
+    requestAnimationFrame: (cb, duration) => rAF(cb,duration),
+    debug: false
   };
 
   class Theme {
@@ -487,11 +535,57 @@
   class Clock {
     constructor(options) {
       this._el = $.el('#clock');
+      this._isGlitchAnimationActive = false;
       this._delimiter = options.delimiter;
       this._form = options.form;
       this._setTime = this._setTime.bind(this);
+      this._glitch = this._glitch.bind(this);
+      this._toggleGlitchClass = this._toggleGlitchClass.bind(this);
+      this._startGlitchAnimation = this._startGlitchAnimation.bind(this)
+      this._pauseGlitchAnimation = this._pauseGlitchAnimation.bind(this)
       this._registerEvents();
       this._start();
+    }
+    _glitch(before, after){
+      let rand = (shorter) => Math.round(Math.random() * (shorter? 15000 : 500 ) ) + (shorter? 5000 : 200 );
+      var _timeout = rand(this._isGlitchAnimationActive);
+      var init = () => {
+        _timeout = rand(this._isGlitchAnimationActive)
+        this._toggleGlitchClass(before, after)
+        setTimeout(init,_timeout)
+      }
+      init()
+    }
+
+    _startGlitchAnimation(before, after) {
+      let random = num => Math.round(Math.random() * num);
+      ($.debug ? console.log('Animation: Start') : null)
+      let glitchAnimation = () => {
+        ($.debug ? console.log('Animation: inProgress') : null)
+        before.style.clip = 'rect('+random(100)+'px,'+random(300)+'px,'+random(100)+'px,'+random(100)+'px)'
+        after.style.clip = 'rect('+random(100)+'px,300px,'+random(100)+'px,0)'
+        this._glitchAnimationId = $.requestAnimationFrame(glitchAnimation)
+      }
+      this._glitchAnimationId = $.requestAnimationFrame(glitchAnimation)
+    }
+
+    _pauseGlitchAnimation(){
+      if (this._isGlitchAnimationActive && this._glitchAnimationId) {
+        ($.debug ? console.log('Animation: Pause') : null)
+        cancelAnimationFrame(this._glitchAnimationId);
+      }
+    }
+
+    _toggleGlitchClass(before, after){
+      if (!this._el.classList[0]){
+        this._el.classList.add("glitch");
+        this._startGlitchAnimation(before, after);
+        this._isGlitchAnimationActive = true;
+      } else { 
+        this._el.classList.remove("glitch");
+        this._pauseGlitchAnimation();
+        this._isGlitchAnimationActive = false;
+      }
     }
 
     _pad(num) {
@@ -507,10 +601,12 @@
       const hours = this._pad(date.getHours());
       const minutes = this._pad(date.getMinutes());
       this._el.innerHTML = hours + this._delimiter + minutes;
+      this._el.setAttribute('data-text', hours + " " + minutes);
     }
 
     _start() {
       this._setTime();
+      this._glitch($.getRuleWithSelector(".glitch::before"), $.getRuleWithSelector(".glitch::after"));
       setInterval(this._setTime, 1000);
     }
   }
