@@ -439,7 +439,7 @@
         xhr.open(method, url);
         xhr.setRequestHeader( 'Access-Control-Allow-Origin', 'https://thourum.github.io')
         xhr.setRequestHeader( 'Access-Control-Allow-Methods', 'GET')
-        xhr.setRequestHeader( 'Access-Control-Allow-Header', 'Origin'
+        xhr.setRequestHeader( 'Access-Control-Allow-Header', 'Origin')
         xhr.onload = () => (this.status >= 200 && this.status < 300) ? resolve(xhr.response) : reject({ status:this.status, statusText:xhr.statusText })
         xhr.onerror = () => reject({ status: this.status, statusText: xhr.statusText })
         xhr.send();
