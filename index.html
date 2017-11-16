@@ -433,10 +433,14 @@
         }
       }
     },
-    jsonp: url => {
-      let script = document.createElement('script');
-      script.src = url;
-      $.el('head').appendChild(script);
+    makeRequest: (method, url) => {
+      return new Promise(function (resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url);
+        xhr.onload = () => (this.status >= 200 && this.status < 300) ? resolve(xhr.response) : reject({ status:this.status, statusText:xhr.statusText })
+        xhr.onerror = () => reject({ status: this.status, statusText: xhr.statusText })
+        xhr.send();
+      });
     },
     isThemeKey: e => {
       const ctrl = e.ctrlKey;
@@ -731,17 +735,9 @@
 
       return new Promise(resolve => {
         const endpoint = 'https://duckduckgo.com/ac/';
-        const callback = 'autocompleteCallback';
-
-        window[callback] = res => {
-          const suggestions = res.map(i => i.phrase)
-            .filter(s => !$.ieq(s, query))
-            .slice(0, this._limit)
-
-          resolve(this._addSearchPrefix(suggestions, rawQuery));
-        };
-
-        $.jsonp(`${endpoint}?callback=${callback}&q=${query}`);
+        $.makeRequest('GET', `${endpoint}?q=${query}&format=json`)
+        .then(res => resolve(this._addSearchPrefix(res.map(i => i.phrase).filter(s => !$.ieq(s, query)).slice(0, this._limit), rawQuery)))
+        .catch( err => console.error('Augh, there was an error!', err.statusText))
       });
     }
   }
