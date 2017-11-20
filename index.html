@@ -12,7 +12,8 @@
       ['Work', 'GitLab', 'gl', 'https://gitlab.thourum.com', '/search?utf8=✓&snippets=&scope=&search={}', '#fc6d26'],
       ['Work', 'Inbox', 'I', 'https://inbox.google.com', '/search/{}', '#4285f4'],
       ['Work', 'Finance', 'yf', 'https://finance.yahoo.com', '/quote/{}', '#410093'],
-      ['Design', 'Fonts', 'fg', 'https://fonts.google.com/', '/?query={}', '#FAFAFA'],
+      ['Work', 'SEC.gov', 'sec', 'https://www.sec.gov', '/cgi-bin/browse-edgar?CIK={}&owner=exclude&Find=Find+Companies&action=getcompany', '#273a56'],
+      ['Design', 'Fonts', 'fg', 'https://fonts.google.com', '/?query={}', '#FAFAFA'],
       ['Design', 'Color', 'ca', 'https://color.adobe.com', '/explore/?q=', '#ff0000'],
       ['Look', 'Codrops', 'C', 'https://tympanus.net/codrops', '?search-type=posts&s={}', '#0099cc'],
       ['Look', 'Hunt', 'H', 'https://www.producthunt.com', '/search?q={}', '#da552f'],
@@ -23,11 +24,11 @@
       ['Lurk', 'Twitter', 't', 'https://twitter.com', '/search?q={}', '#1da1f2'],
       ['Listen', 'Line Radio', 'l', 'https://linerad.io', '/#{}', '#39CCCC'],
       ['Listen', 'SoundCloud', 's', 'https://soundcloud.com/discover', '/search?q={}', '#ff8800'],
-      ['Watch', 'Academy', 'A', 'https://www.khanacademy.org/', '/search?page_search_query={}', '#9cb443'],
+      ['Watch', 'Academy', 'A', 'https://www.khanacademy.org', '/search?page_search_query={}', '#9cb443'],
       ['Watch', 'Netflix', 'n', 'https://www.netflix.com/browse', '/search?q={}', '#e50914'],
       ['Watch', 'Twitch', 'T', 'https://www.twitch.tv/directory/following', null, '#6441a5'],
       ['Watch', 'YouTube', 'y', 'https://youtube.com/feed/subscriptions', '/results?search_query={}', '#cd201f'],
-      ['Download', 'Zooqle', 'z', 'https://zooqle.com/', '/search?q={}', '#F0F0F0'],
+      ['Download', 'Zooqle', 'z', 'https://zooqle.com', '/search?q={}', '#F0F0F0'],
       ['Download', 'YTS', 'Y', 'https://yts.gs/browse-movies/all/1080p/all/7/latest', '/browse-movies/{}', '#2f2f2f'],
     ],
 
@@ -1021,7 +1022,6 @@
       const color = this._commands
         .filter(c => this._getHostname(c[3]) === domain)
         .map(c => c[5])[0];
-
       return color || null;
     }
 
